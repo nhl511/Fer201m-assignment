@@ -7,6 +7,7 @@ import Product from './component/Product';
 import { useEffect, useState } from 'react';
 import CreatePost from './component/CreatePost';
 import YourPost from './component/YourPost';
+import Post from './component/Post';
 
 function App() {
   const[user,setUser] = useState(null)
@@ -37,6 +38,7 @@ function App() {
       <Navbar user={user}/>
       <Routes>
         <Route path="/" element={<Product/>}></Route>
+        <Route path="/post/:id" element={<Post/>}></Route>
         <Route path="/login" element={user ? <Navigate to="/"/> : <Login/>}></Route>
         <Route path="/yourpost" element={user ? <YourPost user={user}/> : <Login/>}></Route>
         <Route path="/createpost" element={user ? <CreatePost user={user}/> : <Login/>}></Route>

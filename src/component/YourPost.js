@@ -10,6 +10,8 @@ import {
   Accordion,
   AccordionDetails,
   AccordionSummary,
+  Box,
+  CardHeader,
   Collapse,
   Dialog,
   DialogTitle,
@@ -19,19 +21,38 @@ import {
   ListItemButton,
   ListItemIcon,
   ListItemText,
+  Modal,
 } from "@mui/material";
 import ExpandLess from "@mui/icons-material/ExpandLess";
 import ExpandMore from "@mui/icons-material/ExpandMore";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import axios from "axios";
+import { Link } from "react-router-dom";
+import UpdatePost from "./UpdatePost";
 
 const YourPost = ({ user }) => {
+  const style = {
+    position: "absolute",
+    top: "50%",
+    left: "50%",
+    transform: "translate(-50%, -50%)",
+    width: 400,
+    bgcolor: "background.paper",
+    border: "2px solid #000",
+    boxShadow: 24,
+    p: 4,
+  };
+
   const [posts, setPosts] = useState([]);
   const [openDialog, setOpenDialog] = useState(false);
   const [modalData, setModalData] = useState(null);
+  const [openModal, setOpenModal] = useState(false);
 
-  const handleClose = () => setOpenDialog(false);
+  const handleClose = () => {
+    setOpenDialog(false);
+    setOpenModal(false);
+  };
   const postDelete = (id, e) => {
     e.preventDefault();
     axios
@@ -50,6 +71,7 @@ const YourPost = ({ user }) => {
         console.log(err);
       });
   }, []);
+
   return (
     <Grid container pl={10} pr={10} pt={20}>
       <Dialog onClose={handleClose} open={openDialog}>
@@ -67,35 +89,55 @@ const YourPost = ({ user }) => {
           </Button>
         </Grid>
       </Dialog>
+
+      <Modal
+        open={openModal}
+        onClose={handleClose}
+        aria-labelledby="modal-modal-title"
+        aria-describedby="modal-modal-description"
+      >
+        <Box sx={style}>
+          {modalData != null ? (
+            <UpdatePost
+              id={modalData.id}
+              title={modalData.title}
+              content={modalData.content}
+            />
+          ) : undefined}
+        </Box>
+      </Modal>
       {posts
         .filter((post) => post.authorid === user.id)
         .map((post) => (
           <Grid key={post.id} item xs={4} pr={2} pt={2} pb={2}>
             <Card>
-              <CardMedia
-                component="img"
-                height="140"
-                image={post.img}
-                alt="green iguana"
-              />
-              <CardContent align="left">
-                <Typography variant="h5" component="div">
-                  {post.title}
-                </Typography>
-                <Typography variant="body1" gutterBottom color="text.secondary">
-                  {post.author}
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  {post.content}
-                </Typography>
-              </CardContent>
+              <Link style={{ textDecoration: "none" }} to={`/post/${post.id}`}>
+                <CardHeader
+                  align="left"
+                  title={<Typography variant="body1">{post.author}</Typography>}
+                  subheader={
+                    <Typography variant="body2" color="text.secondary">
+                     {post.date}
+                    </Typography>
+                  }
+                />
+                <CardMedia
+                  component="img"
+                  height="194"
+                  image={post.image}
+                  alt="green iguana"
+                />
+                <CardContent align="left">
+                  <Typography variant="h5" component="div" gutterBottom>
+                    {post.title}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    {post.content}
+                  </Typography>
+                </CardContent>
+              </Link>
               <CardActions>
                 <Grid container>
-                  <Grid item xs={12}>
-                    <Button size="small" variant="contained" fullWidth>
-                      Read More
-                    </Button>
-                  </Grid>
                   <Grid item xs={12}>
                     <Accordion>
                       <AccordionSummary
@@ -107,7 +149,15 @@ const YourPost = ({ user }) => {
                       <AccordionDetails align="left">
                         <Grid container pl={1}>
                           <Grid item xs={12}>
-                            <Button startIcon={<EditIcon />}>Edit</Button>
+                            <Button
+                              onClick={() => {
+                                setOpenModal(true);
+                                setModalData(post);
+                              }}
+                              startIcon={<EditIcon />}
+                            >
+                              Edit
+                            </Button>
                             <hr />
                           </Grid>
                           <Grid item xs={12}>

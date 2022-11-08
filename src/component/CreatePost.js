@@ -18,44 +18,69 @@ import axios from "axios";
 
 const CreatePost = ({ user }) => {
   const [selectedImage, setSelectedImage] = useState(null);
+  const [image, setImage] = useState("");
+  const current = new Date();
+  const date = `${current.getDate()}/${
+    current.getMonth() + 1
+  }/${current.getFullYear()}`;
+
+  const uploadImage = async (e) => {
+    const files = e.target.files;
+    const data = new FormData();
+    data.append("file", files[0]);
+    data.append("upload_preset", "yzd58rhe");
+
+    const res = await fetch(
+      "https://api.cloudinary.com/v1_1/diwf1mkhu/image/upload",
+      {
+        method: "POST",
+        body: data,
+      }
+    );
+
+    const file = await res.json();
+    console.log(file);
+    setImage(file.secure_url);
+  };
+
   const formik = useFormik({
     initialValues: {
-      author: (user.displayName),
-      authorid: (user.id),
+      author: user.displayName,
+      authorid: user.id,
       title: "",
       content: "",
-      img: "",
+      image: "",
+      date: date,
     },
-    onSubmit: (values, {resetForm}) => {
-      console.log(values.img)
+    onSubmit: async (values, { resetForm }) => {
+      // const {image} = formik.values
+      // const formData = new FormData()
 
-      // fetch(`https://635fe664ca0fe3c21aa783b3.mockapi.io/posts`, {
-      //   method: "POST",
-      //   body: JSON.stringify(values),
-      //   headers: {
-      //     "Content-Type": "application/json",
-      //   },
-      //   credentials: "same-origin",
-      // })
-      //   .then((response) => {
-      //     if (!response.ok) {
-      //       throw new Error(`HTTP Status: ${response.status}`);
+      //     try{
+      //       formData.append("file", image)
+      //       formData.append("upload_preset", "yzd58rhe")
+      //       const res = await axios.post("https://api.cloudinary.com/v1_1/diwf1mkhu/image/upload", formData)
+      //       console.log(res)
+      //     const file = await res.json()
+      // console.log(file)
+      // setImage(file.secure_url)
+      //     } catch(error){
+      //       console.log(formData)
       //     }
-      //     return response.json();
-      //   })
-      //   .catch((error) => console.log(error.message));
-      axios.post("https://635fe664ca0fe3c21aa783b3.mockapi.io/posts",{
-        title: values.title,
-        author: values.author,
-        authorid: values.authorid,
-        img: values.img,
-        content: values.content
-      })
-      .then((res) => console.log(res))
-      .catch((err) => console.log(err))
 
-        resetForm();
+      axios
+        .post("https://635fe664ca0fe3c21aa783b3.mockapi.io/posts", {
+          title: values.title,
+          author: values.author,
+          authorid: values.authorid,
+          content: values.content,
+          date: values.date,
+          image,
+        })
+        .then((res) => console.log(res))
+        .catch((err) => console.log(err));
 
+      resetForm();
     },
 
     validationSchema: Yup.object({
@@ -79,27 +104,44 @@ const CreatePost = ({ user }) => {
       <Card sx={{ minWidth: 800 }}>
         <CardContent>
           <form onSubmit={formik.handleSubmit}>
-            <TextField
-              autoFocus
-              margin="dense"
-              name="author"
-              label="Author"
-              type="text"
-              fullWidth
-              variant="filled"
-              value={formik.values.author}
-            /> 
-            <span hidden>       
-            <TextField           
-            autoFocus
-            margin="dense"
-            name="authorid"
-            label="AuthorID"
-            type="text"
-            fullWidth
-            variant="filled"
-            value={formik.values.authorid}
-          /></span>    
+            <Grid container columnSpacing={1}>
+              <Grid item xs={6}>
+                <TextField
+                  autoFocus
+                  fullWidth
+                  margin="dense"
+                  name="author"
+                  label="Author"
+                  type="text"
+                  variant="filled"
+                  value={formik.values.author}
+                />
+              </Grid>
+              <Grid item xs={6}>
+                <TextField
+                  fullWidth
+                  autoFocus
+                  margin="dense"
+                  name="date"
+                  label="Date"
+                  type="text"
+                  variant="filled"
+                  value={formik.values.date}
+                />
+              </Grid>
+            </Grid>
+            <span hidden>
+              <TextField
+                autoFocus
+                margin="dense"
+                name="authorid"
+                label="AuthorID"
+                type="text"
+                fullWidth
+                variant="filled"
+                value={formik.values.authorid}
+              />
+            </span>
             <TextField
               autoFocus
               margin="dense"
@@ -129,40 +171,36 @@ const CreatePost = ({ user }) => {
             {formik.errors.content && formik.touched.content && (
               <p>{formik.errors.content}</p>
             )}
-                            <Grid item>
-                  {selectedImage && (
-                    <div>
-                      <img
-                        alt="not fount"
-                        width={"100px"}
-                        src={URL.createObjectURL(selectedImage)}
-                      />
-                      <br />
-                    </div>
-                  )}
+            <Grid item>
+              {image && (
+                <div>
+                  <img alt="not fount" width={"100px"} src={image} />
                   <br />
+                </div>
+              )}
+              <br />
 
-                  <Button
-                    variant="outlined"
-                    component="label"
-                    startIcon={<AddPhotoAlternateIcon />}
-                    size="small"
-                  >
-                    Chọn hình ảnh
-                    <input
-                      accept="image/*"
-                      name="img"
-                      type="file"
-                      hidden
-                      // onChange={(event) => {
-                      //   setSelectedImage(event.target.files[0]);
+              <Button
+                variant="outlined"
+                component="label"
+                startIcon={<AddPhotoAlternateIcon />}
+                size="small"
+              >
+                Chọn hình ảnh
+                <input
+                  accept="image/*"
+                  name="image"
+                  type="file"
+                  hidden
+                  // onChange={(event) => {
+                  //   setSelectedImage(event.target.files[0]);
 
-                      // }}
-                      onChange={(e) => formik.setFieldValue("img", e.target.files[0])}
-
-                    />
-                  </Button>
-                </Grid>
+                  // }}
+                  // onChange={(e) => formik.setFieldValue("image", e.target.files[0])}
+                  onChange={uploadImage}
+                />
+              </Button>
+            </Grid>
             <Grid item pt={5}>
               <Button fullWidth variant="contained" size="small" type="submit">
                 Post
