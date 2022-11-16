@@ -58,7 +58,7 @@ const Navbar = ({ user }) => {
     setAnchorElUser(null);
   };
   return (
-    <AppBar position="absolute">
+    <AppBar position="absolute" sx={{ background: "#2c3e50" }}>
       <Container maxWidth="xl">
         <Toolbar disableGutters>
           <CodeIcon sx={{ display: { xs: "none", md: "flex" }, mr: 1 }} />
@@ -185,6 +185,22 @@ const Navbar = ({ user }) => {
                 </Button>
               </Link>
             ) : undefined}
+            <Link
+              to="/about"
+              style={{ textDecoration: "none", color: "white" }}
+            >
+              <Button onClick={handleCloseNavMenu} color="inherit">
+                About
+              </Button>
+            </Link>
+            <Link
+              to="/contact"
+              style={{ textDecoration: "none", color: "white" }}
+            >
+              <Button onClick={handleCloseNavMenu} color="inherit">
+                Contact
+              </Button>
+            </Link>
           </Box>
           {user ? (
             <Box sx={{ flexGrow: 0 }}>

@@ -8,6 +8,9 @@ import { useEffect, useState } from 'react';
 import CreatePost from './component/CreatePost';
 import YourPost from './component/YourPost';
 import Post from './component/Post';
+import Footer from './component/Footer';
+import About from './component/About';
+import Contact from './component/Contact';
 
 function App() {
   const[user,setUser] = useState(null)
@@ -42,8 +45,12 @@ function App() {
         <Route path="/login" element={user ? <Navigate to="/"/> : <Login/>}></Route>
         <Route path="/yourpost" element={user ? <YourPost user={user}/> : <Login/>}></Route>
         <Route path="/createpost" element={user ? <CreatePost user={user}/> : <Login/>}></Route>
+        <Route path="/about" element={<About/>}></Route>
+        <Route path="/contact" element={<Contact/>}></Route>
+
 
       </Routes>
+      <Footer/>
     </div>
   );
 }

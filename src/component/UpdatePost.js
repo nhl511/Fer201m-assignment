@@ -5,19 +5,30 @@ import {
   CardContent,
   CircularProgress,
   Grid,
+  Snackbar,
   TextField,
   Typography,
 } from "@mui/material";
 import AddPhotoAlternateIcon from "@mui/icons-material/AddPhotoAlternate";
+import MuiAlert from "@mui/material/Alert";
 
 import { Field, Form, Formik, useFormik } from "formik";
 import * as Yup from "yup";
 
 import { CheckboxWithLabel } from "formik-material-ui";
 import axios from "axios";
-
+const Alert = React.forwardRef(function Alert(props, ref) {
+  return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
+});
 const UpdatePost = ({ id, title, content }) => {
+  const [open, setOpen] = React.useState(false);
+  const handleClose = (event, reason) => {
+    if (reason === "clickaway") {
+      return;
+    }
+    setOpen(false);
 
+  };
   const formik = useFormik({
     initialValues: {
       title: title,
@@ -31,6 +42,8 @@ const UpdatePost = ({ id, title, content }) => {
         })
         .then((res) => console.log(res))
         .catch((err) => console.log(err));
+        setOpen(true);
+
 
     },
 
@@ -79,7 +92,17 @@ const UpdatePost = ({ id, title, content }) => {
         <Button fullWidth variant="contained" size="small" type="submit">
           Update
         </Button>
+
       </Grid>
+      <Snackbar open={open} autoHideDuration={6000} onClose={handleClose}>
+            <Alert
+              onClose={handleClose}
+              severity="success"
+              sx={{ width: "100%" }}
+            >
+              Update post successfully
+            </Alert>
+          </Snackbar>
     </form>
   );
 };

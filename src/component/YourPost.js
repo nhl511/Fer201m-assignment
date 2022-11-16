@@ -22,6 +22,7 @@ import {
   ListItemIcon,
   ListItemText,
   Modal,
+  Snackbar,
 } from "@mui/material";
 import ExpandLess from "@mui/icons-material/ExpandLess";
 import ExpandMore from "@mui/icons-material/ExpandMore";
@@ -30,6 +31,11 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import axios from "axios";
 import { Link } from "react-router-dom";
 import UpdatePost from "./UpdatePost";
+import MuiAlert from "@mui/material/Alert";
+
+const Alert = React.forwardRef(function Alert(props, ref) {
+  return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
+});
 
 const YourPost = ({ user }) => {
   const style = {
@@ -43,7 +49,9 @@ const YourPost = ({ user }) => {
     boxShadow: 24,
     p: 4,
   };
-
+  const [loading, setLoading] = useState(true)
+  const [open, setOpen] = React.useState(false);
+  
   const [posts, setPosts] = useState([]);
   const [openDialog, setOpenDialog] = useState(false);
   const [modalData, setModalData] = useState(null);
@@ -53,19 +61,33 @@ const YourPost = ({ user }) => {
     setOpenDialog(false);
     setOpenModal(false);
   };
+
+  const handleCloseAlert = (event, reason) => {
+    if (reason === "clickaway") {
+      return;
+    }
+    setOpen(false);
+
+  };
   const postDelete = (id, e) => {
     e.preventDefault();
     axios
       .delete(`https://635fe664ca0fe3c21aa783b3.mockapi.io/posts/${id}`)
       .then((res) => console.log(`Deleted!!!`, res))
       .catch((err) => console.log(err));
+      setOpen(true);
+
   };
   useEffect(() => {
+    setLoading(true);
+
     axios
       .get(`https://635fe664ca0fe3c21aa783b3.mockapi.io/posts`)
       .then((res) => {
         console.log(res);
         setPosts(res.data);
+        setLoading(false);
+
       })
       .catch((err) => {
         console.log(err);
@@ -73,7 +95,7 @@ const YourPost = ({ user }) => {
   }, []);
 
   return (
-    <Grid container pl={10} pr={10} pt={20}>
+    <Grid container pl={10} pr={10} pt={15}>
       <Dialog onClose={handleClose} open={openDialog}>
         <DialogTitle>Bạn có chắc chắn muốn xóa sản phẩm này không?</DialogTitle>
         <Grid container p={2}>
@@ -106,11 +128,26 @@ const YourPost = ({ user }) => {
           ) : undefined}
         </Box>
       </Modal>
-      {posts
+      {
+            loading?(<Grid container pt={18} pb={17}>
+                  <div className="classic-4"></div>
+
+            </Grid>
+              ):(
+      posts
         .filter((post) => post.authorid === user.id)
         .map((post) => (
           <Grid key={post.id} item xs={4} pr={2} pt={2} pb={2}>
             <Card>
+            <Snackbar open={open} autoHideDuration={6000} onClose={handleCloseAlert}>
+            <Alert
+              onClose={handleCloseAlert}
+              severity="success"
+              sx={{ width: "100%" }}
+            >
+              Delete post successfully
+            </Alert>
+          </Snackbar>
               <Link style={{ textDecoration: "none" }} to={`/post/${post.id}`}>
                 <CardHeader
                   align="left"
@@ -216,7 +253,8 @@ const YourPost = ({ user }) => {
               </CardActions>
             </Card>
           </Grid>
-        ))}
+        ))
+              )}
     </Grid>
   );
 };

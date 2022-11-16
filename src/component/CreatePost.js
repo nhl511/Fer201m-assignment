@@ -5,6 +5,7 @@ import {
   CardContent,
   CircularProgress,
   Grid,
+  Snackbar,
   TextField,
   Typography,
 } from "@mui/material";
@@ -14,17 +15,34 @@ import { Field, Form, Formik, useFormik } from "formik";
 import * as Yup from "yup";
 
 import { CheckboxWithLabel } from "formik-material-ui";
+import MuiAlert from "@mui/material/Alert";
+
 import axios from "axios";
 
+const Alert = React.forwardRef(function Alert(props, ref) {
+  return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
+});
+
 const CreatePost = ({ user }) => {
+  const [loading, setLoading] = useState(false)
+
   const [selectedImage, setSelectedImage] = useState(null);
   const [image, setImage] = useState("");
+  const [open, setOpen] = React.useState(false);
   const current = new Date();
   const date = `${current.getDate()}/${
     current.getMonth() + 1
   }/${current.getFullYear()}`;
 
+  const handleClose = (event, reason) => {
+    if (reason === "clickaway") {
+      return;
+    }
+    setOpen(false);
+
+  };
   const uploadImage = async (e) => {
+    setLoading(true);
     const files = e.target.files;
     const data = new FormData();
     data.append("file", files[0]);
@@ -41,6 +59,8 @@ const CreatePost = ({ user }) => {
     const file = await res.json();
     console.log(file);
     setImage(file.secure_url);
+    setLoading(false);
+
   };
 
   const formik = useFormik({
@@ -79,16 +99,17 @@ const CreatePost = ({ user }) => {
         })
         .then((res) => console.log(res))
         .catch((err) => console.log(err));
-
+        setOpen(true);
+        setImage(false);
       resetForm();
     },
 
     validationSchema: Yup.object({
       title: Yup.string()
-        .required("Required.")
+        .required("*Required")
         .min(2, "Must be 2 characters or more"),
       content: Yup.string()
-        .required("Required.")
+        .required("*Required")
         .min(2, "Must be 2 characters or more"),
     }),
   });
@@ -102,6 +123,15 @@ const CreatePost = ({ user }) => {
       justifyContent="center"
     >
       <Card sx={{ minWidth: 800 }}>
+      <Snackbar open={open} autoHideDuration={6000} onClose={handleClose}>
+            <Alert
+              onClose={handleClose}
+              severity="success"
+              sx={{ width: "100%" }}
+            >
+              Create post successfully
+            </Alert>
+          </Snackbar>
         <CardContent>
           <form onSubmit={formik.handleSubmit}>
             <Grid container columnSpacing={1}>
@@ -154,7 +184,7 @@ const CreatePost = ({ user }) => {
               onChange={formik.handleChange}
             />
             {formik.errors.title && formik.touched.title && (
-              <p>{formik.errors.title}</p>
+              <p align="left" style={{color:'red'}}>{formik.errors.title}</p>
             )}
             <TextField
               margin="dense"
@@ -169,24 +199,29 @@ const CreatePost = ({ user }) => {
               onChange={formik.handleChange}
             />
             {formik.errors.content && formik.touched.content && (
-              <p>{formik.errors.content}</p>
+              <p align="left" style={{color:'red'}}>{formik.errors.content}</p>
             )}
-            <Grid item>
-              {image && (
+            <Grid item align="left">
+
+             { loading?(
+                  <h5>Loading image...</h5>
+
+              ):(              image && (
                 <div>
                   <img alt="not fount" width={"100px"} src={image} />
                   <br />
                 </div>
-              )}
-              <br />
-
+              )
+              )
+              }
+              <br/>
               <Button
                 variant="outlined"
                 component="label"
                 startIcon={<AddPhotoAlternateIcon />}
                 size="small"
               >
-                Chọn hình ảnh
+                Choose cover photo
                 <input
                   accept="image/*"
                   name="image"
